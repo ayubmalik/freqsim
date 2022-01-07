@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package freqsim;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "./";
+
+message Frequency {
+  double value = 1;
+}
+
+
+service FrequecySimulator {
+  rpc Get(google.protobuf.Empty) returns  (Frequency);
+}
