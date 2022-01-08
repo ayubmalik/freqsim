@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"sync"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -34,12 +38,35 @@ func (m *randomFreqMeter) run() {
 	}()
 }
 
+func handleCtrlC() (context.Context, context.CancelFunc) {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	return ctx, cancel
+}
+
 func main() {
+	ctx, cancel := handleCtrlC()
+	defer cancel()
+
 	m := randomFreqMeter{interval: 100}
 	m.run()
 
-	for {
-		time.Sleep(100 * time.Millisecond)
-		fmt.Println(m.read())
-	}
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("exit loop")
+				return
+			default:
+				time.Sleep(100 * time.Millisecond)
+				fmt.Println(m.read())
+			}
+		}
+	}()
+
+	wg.Wait()
+
 }

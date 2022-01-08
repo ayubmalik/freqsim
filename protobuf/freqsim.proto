@@ -4,13 +4,12 @@ package freqsim;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "./";
+option go_package = "github.com/ayubmalik/freqsim/protobuf";
 
 message Frequency {
   double value = 1;
 }
 
-
-service FrequecySimulator {
+service FrequencySimulator {
   rpc Get(google.protobuf.Empty) returns  (Frequency);
 }
