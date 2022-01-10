@@ -24,7 +24,7 @@ func newServer() *frequencySimulatorServer {
 	return s
 }
 
-func startRPCServer() error {
+func startRPCServer() (*grpc.Server, error) {
 	port := 8080
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
@@ -33,7 +33,8 @@ func startRPCServer() error {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	protobuf.RegisterFrequencySimulatorServer(grpcServer, newServer())
-	grpcServer.Serve(lis)
-	return nil
-
+	log.Printf("starting rpc on port: %d\n", port)
+	go func() { grpcServer.Serve(lis) }()
+	log.Printf("started")
+	return grpcServer, nil
 }

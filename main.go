@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -44,29 +43,34 @@ func handleCtrlC() (context.Context, context.CancelFunc) {
 }
 
 func main() {
-	ctx, cancel := handleCtrlC()
-	defer cancel()
+	// ctx, cancel := handleCtrlC()
+	// defer cancel()
 
-	m := randomFreqMeter{interval: 100}
-	m.run()
+	// m := randomFreqMeter{interval: 100}
+	// m.run()
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	// var wg sync.WaitGroup
+	// wg.Add(1)
 
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				fmt.Println("exit loop")
-				return
-			default:
-				time.Sleep(100 * time.Millisecond)
-				fmt.Println(m.read())
-			}
-		}
-	}()
+	// go func() {
+	// 	defer wg.Done()
+	// 	for {
+	// 		select {
+	// 		case <-ctx.Done():
+	// 			fmt.Println("exit loop")
+	// 			return
+	// 		default:
+	// 			time.Sleep(100 * time.Millisecond)
+	// 			fmt.Println(m.read())
+	// 		}
+	// 	}
+	// }()
+	// wg.Wait()
 
-	wg.Wait()
+	server, _ := startRPCServer()
+
+	time.Sleep(3 * time.Second)
+	server.GracefulStop()
+	fmt.Println("tis done")
 
 }
