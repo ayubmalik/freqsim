@@ -69,7 +69,7 @@ func main() {
 
 	server, _ := startRPCServer()
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(30 * time.Second)
 	server.GracefulStop()
 	fmt.Println("tis done")
 

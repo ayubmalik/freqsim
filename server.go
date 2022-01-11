@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 
@@ -25,15 +24,14 @@ func newServer() *frequencySimulatorServer {
 }
 
 func startRPCServer() (*grpc.Server, error) {
-	port := 8080
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	lis, err := net.Listen("tcp", "localhost:8081")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 	protobuf.RegisterFrequencySimulatorServer(grpcServer, newServer())
-	log.Printf("starting rpc on port: %d\n", port)
+	log.Printf("starting rpc on port: %d\n", 8081)
 	go func() { grpcServer.Serve(lis) }()
 	log.Printf("started")
 	return grpcServer, nil
