@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FrequencySimulatorClient interface {
 	Get(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*Frequency, error)
-	Read(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (FrequencySimulator_ReadClient, error)
+	Read(ctx context.Context, in *Config, opts ...grpc.CallOption) (FrequencySimulator_ReadClient, error)
 }
 
 type frequencySimulatorClient struct {
@@ -40,7 +40,7 @@ func (c *frequencySimulatorClient) Get(ctx context.Context, in *empty.Empty, opt
 	return out, nil
 }
 
-func (c *frequencySimulatorClient) Read(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (FrequencySimulator_ReadClient, error) {
+func (c *frequencySimulatorClient) Read(ctx context.Context, in *Config, opts ...grpc.CallOption) (FrequencySimulator_ReadClient, error) {
 	stream, err := c.cc.NewStream(ctx, &FrequencySimulator_ServiceDesc.Streams[0], "/freqsim.FrequencySimulator/Read", opts...)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (x *frequencySimulatorReadClient) Recv() (*Frequency, error) {
 // for forward compatibility
 type FrequencySimulatorServer interface {
 	Get(context.Context, *empty.Empty) (*Frequency, error)
-	Read(*empty.Empty, FrequencySimulator_ReadServer) error
+	Read(*Config, FrequencySimulator_ReadServer) error
 	mustEmbedUnimplementedFrequencySimulatorServer()
 }
 
@@ -88,7 +88,7 @@ type UnimplementedFrequencySimulatorServer struct {
 func (UnimplementedFrequencySimulatorServer) Get(context.Context, *empty.Empty) (*Frequency, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
-func (UnimplementedFrequencySimulatorServer) Read(*empty.Empty, FrequencySimulator_ReadServer) error {
+func (UnimplementedFrequencySimulatorServer) Read(*Config, FrequencySimulator_ReadServer) error {
 	return status.Errorf(codes.Unimplemented, "method Read not implemented")
 }
 func (UnimplementedFrequencySimulatorServer) mustEmbedUnimplementedFrequencySimulatorServer() {}
@@ -123,7 +123,7 @@ func _FrequencySimulator_Get_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _FrequencySimulator_Read_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(empty.Empty)
+	m := new(Config)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}

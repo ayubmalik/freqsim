@@ -1,8 +1,9 @@
 build: test
-	go build -o ./bin/freqsim -v
+	go build -o ./bin/server ./cmd/server
+	go build -o ./bin/client ./cmd/client
 
 test:
-	go test ./
+	go test ./...
 
 proto:
 	protoc -I=pb --go_out=pb --go-grpc_out=pb \

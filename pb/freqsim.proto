@@ -10,9 +10,14 @@ option go_package = "github.com/ayubmalik/freqsim/pb";
 message Frequency {
   double value = 1;
   google.protobuf.Timestamp time = 2;
+
+}
+
+message Config {
+  uint32 intervalMillis = 1;
 }
 
 service FrequencySimulator {
   rpc Get(google.protobuf.Empty) returns (Frequency);
-  rpc Read(google.protobuf.Empty) returns (stream Frequency);
+  rpc Read(Config) returns (stream Frequency);
 }
