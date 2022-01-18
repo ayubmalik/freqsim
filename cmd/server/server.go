@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
@@ -11,6 +12,7 @@ import (
 	"github.com/ayubmalik/freqsim/pb"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -19,8 +21,9 @@ type frequencySimulatorServer struct {
 	meter *freqsim.RandomFrequencyMeter
 }
 
-func (*frequencySimulatorServer) Get(context.Context, *empty.Empty) (*pb.Frequency, error) {
-	return &pb.Frequency{Value: 666.66}, nil
+func (s *frequencySimulatorServer) Get(context.Context, *empty.Empty) (*pb.Frequency, error) {
+	freq := &pb.Frequency{Value: float64(s.meter.Read()), Time: timestamppb.Now()}
+	return freq, nil
 }
 
 func (s *frequencySimulatorServer) Read(cfg *pb.Config, stream pb.FrequencySimulator_ReadServer) error {
@@ -40,13 +43,18 @@ func newRPCServer(rfm *freqsim.RandomFrequencyMeter) *frequencySimulatorServer {
 }
 
 func startRPCServer(rfm *freqsim.RandomFrequencyMeter) (*grpc.Server, error) {
+	tlsCredentials, err := loadTLSCredentials()
+	if err != nil {
+		log.Fatal("cannot load TLS credentials: ", err)
+	}
+
 	port := 50051
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
+
+	grpcServer := grpc.NewServer(grpc.Creds(tlsCredentials))
 	pb.RegisterFrequencySimulatorServer(grpcServer, newRPCServer(rfm))
 	go func() {
 		err := grpcServer.Serve(lis)
@@ -56,4 +64,20 @@ func startRPCServer(rfm *freqsim.RandomFrequencyMeter) (*grpc.Server, error) {
 	}()
 	log.Printf("started rpc server on port: %d\n", port)
 	return grpcServer, nil
+}
+
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// TODO(ayubm) use embedded resource
+	serverCert, err := tls.LoadX509KeyPair("certs/server.crt", "certs/server.key")
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.NoClientCert,
+	}
+
+	return credentials.NewTLS(config), nil
 }

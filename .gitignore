@@ -16,6 +16,5 @@ bin/
 # vendor/
 
 # custom
-scripts/*.pem
-scripts/*.srl
-
+scripts/ca.*
+scripts/server.*
